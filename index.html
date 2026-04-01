@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlashCart × Zepto — Moment Commerce M&A Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --ink:#080C0A;--surface:#0F1612;--card:#141F19;--card2:#1A2920;
+  --amber:#F5A623;--amber2:#FFC857;--teal:#00C9A7;--coral:#FF6B35;
+  --purple:#9B72CF;--red:#E05252;--green:#3ECF8E;
+  --white:#F2F7F4;--muted:#6B8A7A;--muted2:#3D5448;--border:#1E3028;
+  --nav-h:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif}
+
+/* ── DECK ── */
+.deck{width:100%;height:100vh;position:relative}
+.slide{position:absolute;inset:0;padding:32px 48px 20px;
+  display:flex;flex-direction:column;overflow:hidden;
+  opacity:0;pointer-events:none;transform:translateY(30px) scale(.98);
+  transition:opacity .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1)}
+.slide.active{opacity:1;pointer-events:all;transform:none}
+.slide.exit{opacity:0;transform:translateY(-20px) scale(.99)}
+
+/* ── NAV BAR ── */
+#navbar{
+  position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);
+  background:rgba(15,22,18,.95);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:16px;z-index:200;
+  backdrop-filter:blur(14px);
+}
+.nav-slides{display:flex;gap:6px;align-items:center}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--muted2);cursor:pointer;transition:all .25s}
+.pip.on{background:var(--amber);width:20px;border-radius:3px}
+.nbtn{background:none;border:1px solid var(--border);color:var(--muted);
+  width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Mono',monospace}
+.nbtn:hover{border-color:var(--amber);color:var(--amber)}
+.nlabel{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);min-width:48px;text-align:center}
+.nkeys{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted2);margin-left:8px}
+
+/* ── SHARED ATOMS ── */
+.eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;
+  color:var(--amber);text-transform:uppercase;margin-bottom:8px}
+.slide-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;
+  color:var(--white);line-height:1.1;margin-bottom:16px;letter-spacing:-.3px}
+.slide-title .a{color:var(--amber)} .slide-title .t{color:var(--teal)}
+.slide-title .c{color:var(--coral)}
+
+.tag{display:inline-block;font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:.1em;padding:3px 9px;border-radius:2px;font-weight:500}
+.tag-a{background:rgba(245,166,35,.15);color:var(--amber);border:1px solid rgba(245,166,35,.25)}
+.tag-t{background:rgba(0,201,167,.1);color:var(--teal);border:1px solid rgba(0,201,167,.2)}
+.tag-c{background:rgba(255,107,53,.1);color:var(--coral);border:1px solid rgba(255,107,53,.2)}
+.tag-p{background:rgba(155,114,207,.1);color:var(--purple);border:1px solid rgba(155,114,207,.2)}
+.tag-g{background:rgba(62,207,142,.1);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px 16px;position:relative;overflow:hidden}
+.card.top-a::before,.card.top-t::before,.card.top-c::before,.card.top-p::before,.card.top-g::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.card.top-a::before{background:var(--amber)}.card.top-t::before{background:var(--teal)}
+.card.top-c::before{background:var(--coral)}.card.top-p::before{background:var(--purple)}
+.card.top-g::before{background:var(--green)}
+
+.ct{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;margin-bottom:9px}
+.ct.a{color:var(--amber)}.ct.t{color:var(--teal)}.ct.c{color:var(--coral)}
+.ct.p{color:var(--purple)}.ct.g{color:var(--green)}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+.stat{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:11px 13px;text-align:center}
+.sv{font-family:'Playfair Display',serif;font-weight:800;font-size:26px;line-height:1;display:block}
+.sl{font-size:9px;color:var(--muted);display:block;margin-top:3px;line-height:1.3}
+.stat.sa .sv{color:var(--amber)}.stat.st .sv{color:var(--teal)}
+.stat.sc .sv{color:var(--coral)}.stat.sg .sv{color:var(--green)}.stat.sp .sv{color:var(--purple)}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--muted2) transparent}
+.scroll::-webkit-scrollbar{width:3px}.scroll::-webkit-scrollbar-thumb{background:var(--muted2)}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.tbl th{background:var(--card2);color:var(--muted);font-family:'DM Mono',monospace;font-size:8.5px;
+  letter-spacing:.07em;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:400}
+.tbl td{padding:6px 10px;border-bottom:1px solid rgba(30,48,40,.6);color:var(--muted);vertical-align:middle}
+.tbl tr:hover td{background:rgba(245,166,35,.03)}
+.tw{color:var(--white);font-weight:500}.ta{color:var(--amber);font-weight:600}
+.tt{color:var(--teal);font-weight:600}.tg{color:var(--green);font-weight:600}
+.tc{color:var(--coral);font-weight:600}.tr{color:var(--red);font-weight:600}
+.tp{color:var(--purple);font-weight:600}
+.tbl .hl{background:rgba(0,201,167,.06)}.tbl .hl td{color:var(--white)}
+.tbl .vd{background:rgba(0,201,167,.12)}.tbl .vd td{font-weight:700;font-size:11px}
+
+/* ── BAR ── */
+.brow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.blbl{font-size:10px;width:100px;flex-shrink:0}
+.btrack{flex:1;height:12px;background:var(--card2);border-radius:2px;overflow:hidden}
+.bfill{height:100%;border-radius:2px}
+.bval{font-family:'DM Mono',monospace;font-size:10px;width:52px;text-align:right}
+
+/* ── BLIST ── */
+.bl{list-style:none}
+.bl li{font-size:10px;color:var(--muted);padding:3px 0 3px 14px;position:relative;line-height:1.45}
+.bl li::before{content:'›';position:absolute;left:0;color:var(--amber);font-weight:700}
+.bl li strong{color:var(--white)}.bl li .ta{color:var(--amber)}.bl li .tt{color:var(--teal)}
+.bl li .tg{color:var(--green)}.bl li .tc{color:var(--coral)}
+
+/* ── TIMELINE ── */
+.tlrow{display:flex;gap:10px;padding:8px 0;position:relative}
+.tlrow:not(:last-child)::after{content:'';position:absolute;left:11px;top:26px;bottom:0;width:1px;background:var(--border)}
+.tldot{width:22px;height:22px;border-radius:50%;border:2px solid;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
+.tlyr{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted)}
+.tlval{font-family:'Playfair Display',serif;font-size:18px;font-weight:800}
+.tlnote{font-size:9.5px;color:var(--muted)}
+
+/* ── DIVIDER ── */
+.dvd{height:1px;background:var(--border);margin:11px 0}
+
+/* ── MOMENT PILL ── */
+.mpill{display:inline-flex;align-items:center;gap:5px;font-size:9px;
+  background:var(--card2);border:1px solid var(--border);border-radius:12px;
+  padding:4px 10px;margin:2px;color:var(--muted)}
+.mpill .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── UE TABLE ── */
+.uerow{display:flex;justify-content:space-between;padding:5px 0;
+  border-bottom:1px solid rgba(30,48,40,.5);font-size:10.5px}
+.uetot{border-bottom:2px solid var(--border)}
+.uetot .uelbl{color:var(--white);font-weight:600}
+.uelbl{color:var(--muted)}.ueval{font-family:'DM Mono',monospace;font-weight:600}
+.uesec{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.09em;color:var(--muted);padding:6px 0 2px}
+
+/* ── 5 FORCES ── */
+.force-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.force-item{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:9px 11px}
+.force-title{font-size:9.5px;font-weight:600;color:var(--white);margin-bottom:3px}
+.force-lvl{display:inline-block;font-family:'DM Mono',monospace;font-size:8px;
+  padding:2px 7px;border-radius:2px;margin-bottom:4px}
+.lvl-h{background:rgba(224,82,82,.15);color:var(--red)}.lvl-m{background:rgba(245,166,35,.15);color:var(--amber)}
+.lvl-l{background:rgba(62,207,142,.15);color:var(--green)}.lvl-vh{background:rgba(255,107,53,.2);color:var(--coral)}
+.force-note{font-size:9px;color:var(--muted)}
+
+/* ── COVER ── */
+#s0{background:radial-gradient(ellipse 70% 55% at 85% 10%,rgba(245,166,35,.07) 0%,transparent 55%),
+     radial-gradient(ellipse 50% 45% at 5% 85%,rgba(0,201,167,.05) 0%,transparent 50%),var(--ink);
+  justify-content:flex-end;padding-bottom:70px}
+.cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%}
+.cover-left{display:flex;flex-direction:column;justify-content:center;padding-right:40px}
+.cover-right{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0}
+.cover-kicker{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;
+  color:var(--amber);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.cover-kicker::before{content:'';width:24px;height:1px;background:var(--amber)}
+.cover-h{font-family:'Playfair Display',serif;font-size:clamp(44px,5.5vw,68px);
+  font-weight:900;line-height:1.0;letter-spacing:-2px;margin-bottom:12px}
+.cover-h .x{color:var(--teal)}
+.cover-sub{font-size:11px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:24px}
+.cover-quote{font-size:12px;color:var(--amber);font-style:italic;
+  padding:12px 16px;border-left:2px solid var(--amber);background:rgba(245,166,35,.05);
+  border-radius:0 4px 4px 0;margin-bottom:28px;line-height:1.5}
+.new-angle{background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.2);
+  border-radius:5px;padding:10px 14px;margin-bottom:20px}
+.na-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--teal);margin-bottom:4px}
+.na-text{font-size:11px;color:var(--white);line-height:1.4}
+
+/* ── PHASE CARD ── */
+.pc{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:11px;height:100%}
+.pc-hd{font-family:'Playfair Display',serif;font-size:11px;font-weight:800;margin-bottom:1px}
+.pc-tm{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:6px}
+.pc-title{font-size:12px;font-weight:600;color:var(--white);margin-bottom:6px}
+
+/* ── SWOT ── */
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.swot-q{border-radius:5px;padding:10px 12px}
+.swot-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;margin-bottom:5px}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ══════════════════════ COVER ══════════════════════ -->
+<div class="slide active" id="s0">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%">
+    <div style="display:flex;flex-direction:column;justify-content:center;padding-right:40px">
+      <div class="cover-kicker">E-SUMMIT 2026 · IIT ROPAR · CONSULTING CASE</div>
+      <div class="cover-h">Flash<br>Cart<br><span class="x">×&nbsp;Zepto</span></div>
+      <div class="cover-sub">India Quick Commerce M&A Strategy</div>
+      <div class="cover-quote">"India doesn't plan its quick commerce orders. It feels them." — Flipkart, 2025. FlashCart's mission: own every feeling.</div>
+      <div class="new-angle">
+        <div class="na-label">THE STRATEGIC INSIGHT</div>
+        <div class="na-text">Quick commerce is evolving from <strong>delivery platform → Moment Commerce Engine.</strong> Acquiring Zepto puts FlashCart at the center of every Indian micro-occasion — 365 days a year.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;justify-content:center;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+        <div class="stat sa"><span class="sv">₹11K Cr</span><span class="sl">GMV in Jan 2026 alone<br>+100% YoY (Redseer)</span></div>
+        <div class="stat st"><span class="sv">7.8Mn</span><span class="sl">Daily orders Jan 2026<br>+95% YoY</span></div>
+        <div class="stat sc"><span class="sv">$5.5B</span><span class="sl">Acquisition price<br>Pre-IPO window</span></div>
+        <div class="stat sg"><span class="sv">3.6×</span><span class="sl">Target return by 2030<br>IRR ~30%</span></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:var(--card);border-radius:5px;border:1px solid var(--border)">
+        <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);width:100%;margin-bottom:5px;letter-spacing:.08em">MOMENT COMMERCE CALENDAR — EVERY DAY IS PEAK SEASON</div>
+        <div class="mpill"><div class="dot" style="background:var(--coral)"></div>Holi</div>
+        <div class="mpill"><div class="dot" style="background:var(--amber)"></div>IPL Season</div>
+        <div class="mpill"><div class="dot" style="background:var(--teal)"></div>Ramzan</div>
+        <div class="mpill"><div class="dot" style="background:var(--purple)"></div>Exam Season</div>
+        <div class="mpill"><div class="dot" style="background:var(--green)"></div>T20 Finals</div>
+        <div class="mpill"><div class="dot" style="background:var(--coral)"></div>Diwali</div>
+        <div class="mpill"><div class="dot" style="background:var(--amber)"></div>Raksha Bandhan</div>
+        <div class="mpill"><div class="dot" style="background:var(--teal)"></div>Women's Day</div>
+        <div class="mpill"><div class="dot" style="background:var(--purple)"></div>Valentine's</div>
+        <div class="mpill"><div class="dot" style="background:var(--green)"></div>Mother's Day</div>
+        <div class="mpill"><div class="dot" style="background:var(--coral)"></div>New Year</div>
+        <div class="mpill"><div class="dot" style="background:var(--amber)"></div>Karwa Chauth</div>
+        <div style="font-size:9px;color:var(--teal);margin-top:4px;width:100%">+ 300+ micro-occasions annually → frequency is the moat</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 1: CONTEXT & OBJECTIVE ══════════════════════ -->
+<div class="slide" id="s1">
+  <div class="eyebrow">01 — CONTEXT & OBJECTIVE</div>
+  <div class="slide-title">The <span class="a">Problem</span> FlashCart Must Solve</div>
+  <div class="scroll">
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card top-a">
+        <div class="ct a">WHY INDIA. WHY NOW. WHY M&A.</div>
+        <div class="dvd"></div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="background:var(--card2);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10.5px;font-weight:700;color:var(--amber);margin-bottom:3px">THE MACRO TAILWIND</div>
+            <div style="font-size:10px;color:var(--muted);line-height:1.5">India's q-com GMV hit <strong style="color:var(--white)">₹11,000 Cr in January 2026 alone</strong> — nearly 100% YoY growth defying post-festive slowdown. 7.8 Mn daily orders, up 95%. This is not a trend — it's a structural shift. The behavioral door only opens one way.</div>
+          </div>
+          <div style="background:var(--card2);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10.5px;font-weight:700;color:var(--coral);margin-bottom:3px">THE MOMENT COMMERCE SHIFT</div>
+            <div style="font-size:10px;color:var(--muted);line-height:1.5">Q-com is moving from <em>convenience platform → moment platform</em>. BigBasket saw <strong style="color:var(--white)">60% order spike</strong> during T20 final. Flipkart saw <strong style="color:var(--white)">12% growth</strong> in first innings. D2C brands report <strong style="color:var(--white)">10–30% demand surges</strong> during micro-occasions. Every festival, match, and cultural moment is now a sales event.</div>
+          </div>
+          <div style="background:var(--card2);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10.5px;font-weight:700;color:var(--purple);margin-bottom:3px">WHY NOT GREENFIELD?</div>
+            <div style="font-size:10px;color:var(--muted);line-height:1.5">Building from scratch = <strong style="color:var(--white)">₹14,000+ crore burn</strong> + 3 years of dark store infrastructure + zero brand equity. Top 3 players hold <strong style="color:var(--white)">90%+ market share.</strong> The only rational entry is M&A.</div>
+          </div>
+          <div style="background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.25);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10.5px;font-weight:700;color:var(--teal);margin-bottom:3px">FLASHCART'S MANDATE</div>
+            <div style="font-size:10px;color:var(--white);line-height:1.5">Acquire an existing player → inject global tech → build the Moment Commerce Engine. Capture every Indian occasion, every impulse, every "I need this NOW" moment — across 200+ cities.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card top-t">
+        <div class="ct t">THE M&A CASE — BY THE NUMBERS</div>
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--red);color:var(--red)">✕</div>
+            <div>
+              <div class="tlyr">INDUSTRY BURN — BUILDING THE MARKET</div>
+              <div class="tlval" style="color:var(--red)">$1.4B+</div>
+              <div class="tlnote">Lost by top 3 players collectively. They educated Indian consumers so FlashCart doesn't have to.</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--muted);color:var(--muted)">3y</div>
+            <div>
+              <div class="tlyr">TIME TO REPLICATE ZEPTO'S NETWORK</div>
+              <div class="tlval" style="color:var(--muted)">3 Years</div>
+              <div class="tlnote">To match 1,046+ dark stores and 80-city coverage — if starting today with $500M+</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--amber);color:var(--amber)">26×</div>
+            <div>
+              <div class="tlyr">BLINKIT PROOF — ACQUISITION RETURNS</div>
+              <div class="tlval" style="color:var(--amber)">26× in 3 Yrs</div>
+              <div class="tlnote">Zomato bought Blinkit at $570M (2022) → now worth $11–13B. Same playbook. Better entry point.</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--teal);color:var(--teal)">→</div>
+            <div>
+              <div class="tlyr">FLASHCART'S ACQUISITION TARGET</div>
+              <div class="tlval" style="color:var(--teal)">$5.5B</div>
+              <div class="tlnote">Pre-IPO price. Post-IPO valuation: $10–15B. Waiting costs FlashCart $5–10B extra.</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--green);color:var(--green)">✓</div>
+            <div>
+              <div class="tlyr">DAY 1 INSTANT ASSETS</div>
+              <div class="tlval" style="color:var(--green)">1,046+ Stores</div>
+              <div class="tlnote">Dark stores across 80+ cities. 1.2M daily orders. 15M+ MAU. Zero cold start.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card top-c" style="padding:12px 16px">
+      <div class="ct c">THE MOMENT COMMERCE ENGINE — ZEPTO'S CMO ON THE OPPORTUNITY</div>
+      <div class="g3">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--amber);line-height:1">4–5×</div>
+          <div style="font-size:9.5px;color:var(--white);font-weight:600;margin:3px 0 2px">Orders per day per customer</div>
+          <div style="font-size:9px;color:var(--muted)">"Morning: milk & bread. Afternoon: snack. Evening: stationery before going out. Night: dinner ingredients. Late night: snacks again." — Chandan Mendiratta, Zepto CMO (Inc42, Mar '26)</div>
+        </div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--coral);line-height:1">60%</div>
+          <div style="font-size:9.5px;color:var(--white);font-weight:600;margin:3px 0 2px">BigBasket order spike — T20 final</div>
+          <div style="font-size:9px;color:var(--muted)">India vs. match-night snacks. BigBasket reported 60% uplift vs. BAU by 9 PM on T20 World Cup Final day (India wins). Flipkart: 12% growth during first innings alone.</div>
+        </div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--teal);line-height:1">10–30%</div>
+          <div style="font-size:9.5px;color:var(--white);font-weight:600;margin:3px 0 2px">D2C brand demand surge on occasions</div>
+          <div style="font-size:9px;color:var(--muted)">Renee Cosmetics sees 10–30% demand spike on festivals. "The festive calendar in India rarely slows down" — Ashutosh Valani, Renee Cosmetics. FlashCart must own this calendar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 2: INDUSTRY ANALYSIS ══════════════════════ -->
+<div class="slide" id="s2">
+  <div class="eyebrow">02 — INDUSTRY ANALYSIS</div>
+  <div class="slide-title">The Landscape: <span class="a">Moment Commerce</span> Is Reshaping Retail</div>
+  <div class="scroll">
+    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-bottom:12px">
+      <div class="card top-a">
+        <div class="ct a">MARKET SIZE & TRAJECTORY</div>
+        <div style="margin-bottom:10px">
+          <div class="brow"><div class="blbl" style="font-size:9px">2022</div><div class="btrack"><div class="bfill" style="width:3%;background:var(--muted2)"></div></div><div class="bval" style="color:var(--muted)">$0.8B</div></div>
+          <div class="brow"><div class="blbl" style="font-size:9px">2023</div><div class="btrack"><div class="bfill" style="width:8%;background:var(--muted)"></div></div><div class="bval" style="color:var(--muted)">$2.0B</div></div>
+          <div class="brow"><div class="blbl" style="font-size:9px;font-weight:600;color:var(--white)">2025 (est.)</div><div class="btrack"><div class="bfill" style="width:42%;background:var(--amber)"></div></div><div class="bval" style="color:var(--amber);font-weight:700">$4.2B</div></div>
+          <div class="brow"><div class="blbl" style="font-size:9px">2028E</div><div class="btrack"><div class="bfill" style="width:70%;background:var(--teal)"></div></div><div class="bval" style="color:var(--teal)">$9–10B</div></div>
+          <div class="brow"><div class="blbl" style="font-size:9px">2030E</div><div class="btrack"><div class="bfill" style="width:100%;background:linear-gradient(90deg,var(--amber),var(--coral))"></div></div><div class="bval" style="color:var(--coral)">$42B</div></div>
+        </div>
+        <div style="font-size:8.5px;color:var(--muted);font-style:italic;margin-bottom:8px">Source: Redseer (Jan 2026), Morgan Stanley, Bernstein. CAGR: 40%</div>
+        <div class="dvd"></div>
+        <div class="g2">
+          <div class="stat sa" style="padding:8px"><span class="sv" style="font-size:18px">₹11,000Cr</span><span class="sl">Jan 2026 GMV alone<br>+100% YoY</span></div>
+          <div class="stat st" style="padding:8px"><span class="sv" style="font-size:18px">7.8Mn</span><span class="sl">Daily orders Jan 2026<br>+95% YoY (Redseer)</span></div>
+          <div class="stat sc" style="padding:8px"><span class="sv" style="font-size:18px">3,500+</span><span class="sl">Active dark stores<br>industry-wide</span></div>
+          <div class="stat sg" style="padding:8px"><span class="sv" style="font-size:18px">90%+</span><span class="sl">Top 3 players'<br>combined share</span></div>
+        </div>
+      </div>
+      <!-- 5 Forces -->
+      <div class="card top-c">
+        <div class="ct c">PORTER'S 5 FORCES ANALYSIS</div>
+        <div class="force-grid" style="margin-bottom:6px">
+          <div class="force-item" style="grid-column:1/-1">
+            <div class="force-title">Competitive Rivalry</div>
+            <span class="force-lvl lvl-vh">VERY HIGH</span>
+            <div class="force-note">3 well-funded giants (Blinkit $11–13B, Instamart $10–11B, Zepto $7–8B) fighting for same urban consumer. Platform switching zero-friction. Instamart CEO: "irrational competition leading to zero loyalty" (Swiggy Q3 FY26 results).</div>
+          </div>
+          <div class="force-item">
+            <div class="force-title">Buyer Power</div>
+            <span class="force-lvl lvl-h">HIGH</span>
+            <div class="force-note">Zero switching cost. Users toggle between apps daily. Price comparison trivial. Loyalty only through subscription lock-in.</div>
+          </div>
+          <div class="force-item">
+            <div class="force-title">Supplier Power</div>
+            <span class="force-lvl lvl-m">MEDIUM</span>
+            <div class="force-note">FMCG brands (HUL, Nestle, ITC) need q-com distribution but resist margin pressure. Private label reduces dependency.</div>
+          </div>
+          <div class="force-item">
+            <div class="force-title">New Entrants</div>
+            <span class="force-lvl lvl-l">LOW</span>
+            <div class="force-note">Dark store capex + VC funding required + 3+ years to build network. Dunzo collapsed. Foreign window narrowing fast.</div>
+          </div>
+          <div class="force-item">
+            <div class="force-title">Substitutes</div>
+            <span class="force-lvl lvl-l">LOW</span>
+            <div class="force-note">Kiranas + scheduled e-grocery still relevant in Tier 2/3 — but 10-min speed is a one-way behavioral door in metros.</div>
+          </div>
+        </div>
+        <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:4px;padding:7px 10px;font-size:9px;color:var(--amber)">⚡ The competitive moat in q-com is built through <strong>dark store density + behavioral data + customer habit loops</strong> — not product differentiation alone.</div>
+      </div>
+    </div>
+    <!-- Moment Commerce Breakdown -->
+    <div class="card top-t">
+      <div class="ct t">THE MICRO-OCCASION WAVE — 3 REVENUE ADVANTAGES (INC42, MAR 2026)</div>
+      <div class="g3">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--teal);margin-bottom:5px">📈 ORDER FREQUENCY</div>
+          <div style="font-size:9.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Unlike retail (weekly shop), q-com operates in a high-frequency cycle — 4–5 touchpoints per customer per day. Every occasion refreshes the purchase trigger.</div>
+          <div style="background:var(--card2);border-radius:4px;padding:7px 9px">
+            <div style="font-size:9px;font-weight:600;color:var(--white)">Platforms now have:</div>
+            <ul class="bl"><li>"Ramzan Specials" tabs</li><li>"Exam Ready" curated sections</li><li>"Match Night Snacks" themed drops</li><li>Real-time contextual banners</li></ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:5px">🎯 BRAND DISCOVERY</div>
+          <div style="font-size:9.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Micro-occasions = turning points for D2C brands. Not just a sale — a discovery event. Sponsored in-app moments drive both instant conversion and new user acquisition.</div>
+          <div style="background:var(--card2);border-radius:4px;padding:7px 9px">
+            <div style="font-size:9px;font-weight:600;color:var(--white)">Campaign examples:</div>
+            <ul class="bl"><li>Flipkart Minutes "Buy Kiwi @₹9" — T20 final</li><li>Instamart Valentine's OOH "love emergencies"</li><li>Blinkit mystery gifts New Year 2026</li><li>BigBasket IPL cricket tie-ins</li></ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--coral);margin-bottom:5px">🔒 CUSTOMER LOYALTY</div>
+          <div style="font-size:9.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Instamart CEO: "irrational competition is so high customers switch without any real loyalty." The answer isn't discounts — it's <strong style="color:var(--white)">moment capture.</strong> Own the occasion, own the customer.</div>
+          <div style="background:var(--card2);border-radius:4px;padding:7px 9px">
+            <div style="font-size:9px;font-weight:600;color:var(--white)">The next battleground:</div>
+            <ul class="bl"><li>Not Diwali vs. Black Friday</li><li>Dozens of small cultural moments</li><li>Sports events + everyday triggers</li><li>Last-minute gifting hub role</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 3: TARGET EVALUATION ══════════════════════ -->
+<div class="slide" id="s3">
+  <div class="eyebrow">03 — TARGET EVALUATION</div>
+  <div class="slide-title">Why <span class="t">Zepto</span> Is The Only Logical Deal</div>
+  <div class="scroll">
+    <table class="tbl" style="margin-bottom:12px">
+      <thead>
+        <tr>
+          <th style="width:130px">CRITERIA</th>
+          <th>BLINKIT</th>
+          <th>SWIGGY INSTAMART</th>
+          <th>BIGBASKET (BB Now)</th>
+          <th style="background:rgba(0,201,167,.08);color:var(--teal)">ZEPTO ✓ RECOMMENDED</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="tw">Owner</td><td>Eternal (Zomato) — Listed</td><td>Swiggy — Listed</td><td>Tata Group</td><td class="tt">Independent — Pre-IPO</td></tr>
+        <tr><td class="tw">Acquirable?</td><td class="tr">❌ $11–13B listed mkt cap</td><td class="tr">❌ Listed, locked in Swiggy</td><td class="tr">❌ Tata strategic asset</td><td class="tg hl">✅ Pre-IPO, open to deal</td></tr>
+        <tr><td class="tw">Market Share</td><td>48% — Market Leader</td><td>24% — #3 (31% order share)</td><td>~5% + JioMart overlap</td><td class="tt">22% GMV / 31% order share</td></tr>
+        <tr><td class="tw">Valuation</td><td class="tr">$11–13B (mkt implied)</td><td class="tr">$10–11B (within Swiggy)</td><td>$3–4B (Tata internal)</td><td class="ta">$7–8B (last round Oct'25)</td></tr>
+        <tr><td class="tw">Dark Stores</td><td>1,816+</td><td>1,124+</td><td>812+</td><td class="tt">1,046+ in 80+ cities</td></tr>
+        <tr><td class="tw">Tech Maturity</td><td>High (Eternal DNA)</td><td>High (Swiggy DNA)</td><td>Medium</td><td class="tt">HIGH — Pure-play tech-first</td></tr>
+        <tr><td class="tw">FY25 Revenue</td><td>₹28,274Cr GOV</td><td>₹14,600Cr topline</td><td>~₹9,000Cr</td><td class="ta">₹11,110Cr (+149% YoY)</td></tr>
+        <tr><td class="tw">Funding Risk</td><td>None (Zomato cash)</td><td>None (Swiggy cash)</td><td>None (Tata)</td><td class="ta">⚡ Needs IPO capital → deal opens</td></tr>
+        <tr><td class="tw">GMV Growth</td><td>Steady (market leader)</td><td>~101% YoY Q4 FY25</td><td>Moderate</td><td class="tg">140% GMV growth trajectory</td></tr>
+        <tr><td class="tw">Deal Complexity</td><td class="tr">Impossible</td><td class="tr">Impossible</td><td class="tr">Very High (Tata consent)</td><td class="tt">LOW — Cayman HoldCo structure</td></tr>
+        <tr class="vd"><td class="tw">VERDICT</td><td class="tr">NOT AVAILABLE</td><td class="tr">NOT AVAILABLE</td><td class="tr">NOT STRATEGIC</td><td class="tt">★ IDEAL TARGET</td></tr>
+      </tbody>
+    </table>
+
+    <div class="g2">
+      <!-- SWOT -->
+      <div class="card top-a">
+        <div class="ct a">ZEPTO SWOT ANALYSIS</div>
+        <div class="swot-grid">
+          <div class="swot-q" style="background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.15)">
+            <div class="swot-label" style="color:var(--green)">STRENGTHS</div>
+            <ul class="bl">
+              <li><strong>10-min promise</strong> drives high user recall vs all competitors</li>
+              <li>Tech-first operations → efficient dark store + routing optimization</li>
+              <li>70% dark stores EBITDA positive (Nov 2024)</li>
+              <li>Store payback: 8 months (down from 23)</li>
+              <li>Pure-play tech DNA — no parent company distraction</li>
+            </ul>
+          </div>
+          <div class="swot-q" style="background:rgba(224,82,82,.07);border:1px solid rgba(224,82,82,.15)">
+            <div class="swot-label" style="color:var(--red)">WEAKNESSES</div>
+            <ul class="bl">
+              <li>High cash burn: ₹100Cr/month fixed costs (salary-heavy)</li>
+              <li>Lower dark store density vs Blinkit in key markets</li>
+              <li>Dark pattern allegations → FDA food safety violations (Dharavi)</li>
+              <li>IPO uncertainty → investor anxiety</li>
+              <li>CCI antitrust probe on pricing practices</li>
+            </ul>
+          </div>
+          <div class="swot-q" style="background:rgba(0,201,167,.07);border:1px solid rgba(0,201,167,.15)">
+            <div class="swot-label" style="color:var(--teal)">OPPORTUNITIES</div>
+            <ul class="bl">
+              <li>Tier 2/3 city expansion: 50+ untapped cities</li>
+              <li>Higher basket via Moment Commerce categories</li>
+              <li>Zepto Pharmacy: 10-min medicine delivery (launched Aug 2025)</li>
+              <li>Zepto Atom B2B analytics platform scaling</li>
+              <li>Private label mix currently only 4% → 22% potential</li>
+            </ul>
+          </div>
+          <div class="swot-q" style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.15)">
+            <div class="swot-label" style="color:var(--amber)">THREATS</div>
+            <ul class="bl">
+              <li>Intense competition: Blinkit + Instamart price wars</li>
+              <li>Margin erosion from irrational discounting</li>
+              <li>Blinkit's 2,000+ dark stores → widening coverage gap</li>
+              <li>Reliance/JioMart entering with 20L kirana network</li>
+              <li>Foreign player window narrowing rapidly</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Why only logical deal -->
+      <div class="card top-t">
+        <div class="ct t">WHY ZEPTO × FLASHCART = THE ONLY LOGICAL DEAL</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:var(--teal);margin-bottom:3px">CAPITAL MEETS GROWTH</div>
+            <div style="font-size:9.5px;color:var(--muted)">Zepto's <strong style="color:var(--white)">140% GMV growth</strong> + FlashCart's global capital = funding runway without dilutive VC rounds. Replaces IPO anxiety with strategic certainty.</div>
+          </div>
+          <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.18);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:3px">TECH AMPLIFICATION</div>
+            <div style="font-size:9.5px;color:var(--muted)">FlashCart's supply chain AI layered onto Zepto's dark store operations = projected <strong style="color:var(--white)">30–35% opex reduction</strong> within 18 months. TFT demand forecasting, PPO routing, CV inventory.</div>
+          </div>
+          <div style="background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.18);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:3px">ZERO COLD START</div>
+            <div style="font-size:9.5px;color:var(--muted)"><strong style="color:var(--white)">15M+ active urban users</strong> acquired on Day 1. No CAC spend. No brand building. Instant market presence and 30% share.</div>
+          </div>
+          <div style="background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.18);border-radius:5px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:var(--coral);margin-bottom:3px">MOMENT COMMERCE PLATFORM</div>
+            <div style="font-size:9.5px;color:var(--muted)">Zepto's existing <strong style="color:var(--white)">Moment Commerce infra</strong> (themed tabs, event drops, contextual UX) + FlashCart's global brand relationships = the most powerful occasion-driven commerce platform in India.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 4: M&A STRATEGY ══════════════════════ -->
+<div class="slide" id="s4">
+  <div class="eyebrow">04 — M&A STRATEGY</div>
+  <div class="slide-title">The <span class="a">Deal Architecture</span> — Structure, Rationale, Synergies</div>
+  <div class="scroll">
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card top-a">
+        <div class="ct a">DEAL STRUCTURE — $5.5B TRANSACTION</div>
+        <table class="tbl" style="margin-bottom:10px">
+          <thead><tr><th>COMPONENT</th><th>AMOUNT</th><th>RATIONALE</th></tr></thead>
+          <tbody>
+            <tr><td class="tw">Total Deal Value</td><td class="ta">$5.5B</td><td>12% premium to $7–8B last round. Control premium + pre-IPO window.</td></tr>
+            <tr><td class="tw">Cash (60%)</td><td class="tt">$3.3B</td><td>Day 1 cash to investors. FlashCart balance sheet + $2B bridge at 6.5% p.a.</td></tr>
+            <tr><td class="tw">Equity (40%)</td><td class="tp">$2.2B</td><td>FlashCart stock to founders. 3-yr lock-up keeps Aadit & Kaivalya aligned.</td></tr>
+            <tr><td class="tw">Legal Vehicle</td><td class="ta">Cayman HoldCo</td><td>Acquire Zepto's Cayman parent. Same Walmart×Flipkart structure. FDI compliant.</td></tr>
+            <tr><td class="tw">Integration Reserve</td><td class="tg">$300M</td><td>350 new dark stores + AI tech rollout + Moment Commerce platform build.</td></tr>
+            <tr><td class="tw">Working Capital</td><td class="tt">$200M</td><td>Immediate India OpCo injection. Eliminates ₹100Cr/month burn anxiety.</td></tr>
+          </tbody>
+        </table>
+        <div style="background:rgba(245,166,35,.06);border-left:2px solid var(--amber);padding:7px 10px;font-size:9px;color:var(--muted)">
+          <strong style="color:var(--amber)">Regulatory path (4–6 months):</strong> CCI pre-emptive filing (below 35% dominance threshold) · DPIIT/FIPB · RBI ECB approval · Legal: AZB & Partners. No NCLT required (acquisition, not merger).
+        </div>
+      </div>
+      <div class="card top-t">
+        <div class="ct t">VALUE CREATION — THE BLINKIT BLUEPRINT, IMPROVED</div>
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--muted);color:var(--muted);font-size:7px">2022</div>
+            <div>
+              <div class="tlyr">ZOMATO ACQUIRES BLINKIT — SEEN AS OVERPRICED</div>
+              <div class="tlval" style="color:var(--muted)">$570M</div>
+              <div class="tlnote">Blinkit losing money. Analysts skeptical. Zero contribution margin.</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--amber);color:var(--amber);font-size:7px">2025</div>
+            <div>
+              <div class="tlyr">BLINKIT MARKET VALUE TODAY</div>
+              <div class="tlval" style="color:var(--amber)">$11–13B</div>
+              <div class="tlnote">26× in 3 years. Contribution positive. 48% market share. Zomato's crown jewel.</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--teal);color:var(--teal);font-size:7px">2026</div>
+            <div>
+              <div class="tlyr">FLASHCART ACQUIRES ZEPTO — BETTER ENTRY POINT</div>
+              <div class="tlval" style="color:var(--teal)">$5.5B</div>
+              <div class="tlnote">Zepto already 70% store-profitable. Pre-IPO window. AI can accelerate what took Blinkit 3 years.</div>
+            </div>
+          </div>
+          <div class="tlrow">
+            <div class="tldot" style="border-color:var(--green);color:var(--green);font-size:7px">2030</div>
+            <div>
+              <div class="tlyr">MERGED ENTITY — MOMENT COMMERCE LEADER</div>
+              <div class="tlval" style="color:var(--green)">$20–25B</div>
+              <div class="tlnote">3.6–4.5× return. IRR ~30%. Conservative vs Blinkit's 26×. Justified by more mature entry.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;font-size:10px;font-weight:600;color:var(--white);letter-spacing:.04em">STRATEGIC SYNERGIES — DAY 1 DELIVERY</div>
+    <div class="g4">
+      <div class="card top-t">
+        <div class="ct t">INFRASTRUCTURE</div>
+        <ul class="bl"><li><strong>1,046+</strong> dark stores, 80+ cities</li><li>~80K trained delivery riders</li><li>Cold-chain (dairy, pharmacy)</li><li>3 yrs H3 hexagonal zone data across 80 cities — priceless</li></ul>
+      </div>
+      <div class="card top-a">
+        <div class="ct a">MOMENT COMMERCE IP</div>
+        <ul class="bl"><li>Existing themed in-app section engine</li><li>Zepto Atom: 300+ brand relationships</li><li>Event-triggered UX framework</li><li>D2C brand ad partnerships for occasions</li></ul>
+      </div>
+      <div class="card top-c">
+        <div class="ct c">CUSTOMER BASE</div>
+        <ul class="bl"><li><strong>15M+ MAU</strong> — zero CAC Day 1</li><li>22–30% market share pre-loaded</li><li>Zepto Pass subscriber base</li><li>3 years of per-user behavioral data</li></ul>
+      </div>
+      <div class="card top-g">
+        <div class="ct g">AI ACCELERATION</div>
+        <ul class="bl"><li>TFT demand forecasting → ↓35% waste</li><li>PPO/A3C VRP routing → +18% rider efficiency</li><li>YOLO v8 CV → ↓60% wrong deliveries</li><li>Two-Tower NN replenishment → +8% order freq.</li></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 5: VALUE CREATION MODEL ══════════════════════ -->
+<div class="slide" id="s5">
+  <div class="eyebrow">05 — VALUE CREATION MODEL</div>
+  <div class="slide-title">Post-Merger <span class="a">Business Model</span> — 7 Streams · Unit Econ · P&L</div>
+  <div class="scroll">
+    <div style="display:grid;grid-template-columns:1.05fr 0.95fr 1fr;gap:12px;margin-bottom:12px">
+      <!-- Revenue streams -->
+      <div class="card top-g">
+        <div class="ct g">REVENUE STACK — 7 STREAMS</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:7px">Moment Commerce unlocks <strong style="color:var(--green)">premium occasion-based tiers</strong> across all streams</div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9.5px;font-weight:700;color:var(--teal);margin-bottom:2px">① GMV Commission (12–18%)</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:52%;height:100%;background:var(--teal)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">Core. $1,080M by Yr3 at $9B GMV. Occasion drops command 15–18% (D2C brands pay premium for festival slots).</div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9.5px;font-weight:700;color:var(--amber);margin-bottom:2px">② FlashCart Prime Subscription</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:9%;height:100%;background:var(--amber)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">₹149/mo or ₹999/yr. Target: 15M subs Yr3 = <strong style="color:var(--amber)">$180M pure recurring, zero COGS.</strong></div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9.5px;font-weight:700;color:var(--coral);margin-bottom:2px">③ Moment Commerce Retail Media</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:14%;height:100%;background:var(--coral)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">CPC/CPM + event-specific takeovers. Brands pay 3–5× premium for Holi/Diwali/IPL banner. <strong style="color:var(--coral)">70–80% gross margin.</strong></div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9.5px;font-weight:700;color:var(--purple);margin-bottom:2px">④ Private Labels (FlashCart Essentials)</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:7%;height:100%;background:var(--purple)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">Currently 4% GMV → target 22% Yr3. 30–40% margin vs 10–15% branded. FPO direct sourcing.</div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9.5px;font-weight:700;color:var(--green);margin-bottom:2px">⑤ Zepto Atom (B2B SaaS)</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:4%;height:100%;background:var(--green)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">₹5–50L/month/brand for real-time occasion analytics. 500 brands = ₹600Cr/yr. Highest margin line.</div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9.5px;font-weight:700;color:var(--amber);margin-bottom:2px">⑥ Zepto Pharmacy + Cafe</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:6%;height:100%;background:var(--amber)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">Cafe: $110M+ run-rate. Pharmacy: regulatory moat (CDSCO licenses). High-AOV: ₹1,200–1,500.</div>
+        </div>
+        <div>
+          <div style="font-size:9.5px;font-weight:700;color:var(--muted);margin-bottom:2px">⑦ LMaaS B2B Logistics</div>
+          <div style="height:8px;background:var(--card2);border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="width:3%;height:100%;background:var(--muted)"></div></div>
+          <div style="font-size:8.5px;color:var(--muted)">Off-peak rider capacity → B2B deliveries. 200K orders/day × ₹90 = ₹18Cr/day from existing infra, ~zero added cost.</div>
+        </div>
+      </div>
+
+      <!-- Unit Economics -->
+      <div class="card top-a">
+        <div class="ct a">UNIT ECONOMICS — ₹750 AOV ORDER</div>
+        <div class="uesec">REVENUE PER ORDER</div>
+        <div class="uerow"><div class="uelbl">Commission (12% GMV)</div><div class="ueval" style="color:var(--teal)">₹90</div></div>
+        <div class="uerow"><div class="uelbl">Delivery fee (45% orders)</div><div class="ueval" style="color:var(--teal)">₹29</div></div>
+        <div class="uerow"><div class="uelbl">Retail media allocation</div><div class="ueval" style="color:var(--teal)">₹9</div></div>
+        <div class="uerow uetot"><div class="uelbl">TOTAL REVENUE</div><div class="ueval" style="color:var(--green);font-size:13px">₹128</div></div>
+        <div class="uesec">VARIABLE COSTS</div>
+        <div class="uerow"><div class="uelbl">Rider (salary + fuel)</div><div class="ueval" style="color:var(--red)">₹48</div></div>
+        <div class="uerow"><div class="uelbl">Dark store opex / order</div><div class="ueval" style="color:var(--red)">₹21</div></div>
+        <div class="uerow"><div class="uelbl">Packaging</div><div class="ueval" style="color:var(--red)">₹6</div></div>
+        <div class="uerow"><div class="uelbl">Tech infra allocation</div><div class="ueval" style="color:var(--red)">₹5</div></div>
+        <div class="uerow uetot"><div class="uelbl">TOTAL VARIABLE COST</div><div class="ueval" style="color:var(--red);font-size:13px">₹80</div></div>
+        <div style="background:var(--amber);border-radius:5px;padding:10px;text-align:center;margin-top:9px">
+          <div style="font-size:8.5px;color:#000;font-weight:600;margin-bottom:2px">CONTRIBUTION MARGIN</div>
+          <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#000">₹48 / ORDER</div>
+          <div style="font-size:9.5px;color:#333;font-weight:600">37.5% CM · EBITDA break-even Month 18</div>
+        </div>
+        <div class="dvd"></div>
+        <div style="font-size:9px;color:var(--muted)"><strong style="color:var(--white)">AOV Journey ₹660→₹880:</strong> Threshold nudge +₹65 · Bundle offers +₹40 · Replenishment push (34% conv.) +₹95 · Cafe upsell +₹45 · Occasion-based bundles +₹60</div>
+      </div>
+
+      <!-- P&L -->
+      <div class="card top-p">
+        <div class="ct p">3-YEAR P&L PROJECTION</div>
+        <table class="tbl" style="font-size:9.5px;margin-bottom:8px">
+          <thead><tr><th>METRIC</th><th>BASE</th><th>YR 1</th><th>YR 2</th><th style="color:var(--amber)">YR 3</th></tr></thead>
+          <tbody>
+            <tr><td class="tw">GMV ($B)</td><td>$3.0</td><td>$4.5</td><td>$6.5</td><td class="ta">$9.0</td></tr>
+            <tr><td class="tw">Net Revenue</td><td>$508M</td><td>$896M</td><td>$1.47B</td><td class="ta">$2.34B</td></tr>
+            <tr><td class="tw">Gross Margin %</td><td>17%</td><td>30%</td><td>41%</td><td class="ta">52%</td></tr>
+            <tr><td class="tw">EBITDA</td><td class="tr">-$160M</td><td class="tr">-$95M</td><td class="tg">+$136M</td><td class="tg">+$715M</td></tr>
+            <tr><td class="tw">Orders/Day</td><td>1.2M</td><td>1.35M</td><td>1.75M</td><td class="tt">2.3M</td></tr>
+            <tr><td class="tw">AOV</td><td>₹660</td><td>₹720</td><td>₹800</td><td class="ta">₹880</td></tr>
+            <tr><td class="tw">Dark Stores</td><td>1,046</td><td>1,400</td><td>1,800</td><td class="tt">2,400</td></tr>
+            <tr><td class="tw">Prime Subs</td><td>0</td><td>3M</td><td>8M</td><td class="tp">15M</td></tr>
+            <tr><td class="tw">Private Label %</td><td>4%</td><td>8%</td><td>15%</td><td class="tg">22%</td></tr>
+            <tr><td class="tw">Profitable Stores</td><td>70%</td><td>80%</td><td>88%</td><td class="tg">95%</td></tr>
+            <tr><td class="tw">City Coverage</td><td>80+</td><td>110</td><td>150</td><td class="tt">200+</td></tr>
+          </tbody>
+        </table>
+        <div style="background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.25);border-radius:4px;padding:7px 10px">
+          <div style="font-size:9px;color:var(--green);font-weight:600;margin-bottom:2px">EXIT VALUATION (2031, Year 5)</div>
+          <div style="font-size:9px;color:var(--muted)">$14B GMV · $1.5B EBITDA · 20× EV/EBITDA multiple = <strong style="color:var(--green)">$25–30B enterprise value</strong>. $5.5B → $25B. IRR: 28–35%.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 6: INTEGRATION ROADMAP ══════════════════════ -->
+<div class="slide" id="s6">
+  <div class="eyebrow">06 — INTEGRATION ROADMAP</div>
+  <div class="slide-title">Building the <span class="t">Moment Commerce Engine</span> — Phase by Phase</div>
+  <div class="scroll">
+    <div class="g2" style="margin-bottom:12px">
+      <!-- AI Stack -->
+      <div class="card top-p">
+        <div class="ct p">AI TECHNOLOGY STACK — SPECIFIC MODELS</div>
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="flex-shrink:0"><span class="tag tag-t" style="font-size:7px;padding:2px 6px">TFT</span></div>
+            <div><div style="font-size:10px;font-weight:600;color:var(--white)">Temporal Fusion Transformer — Demand Forecasting</div>
+            <div style="font-size:9px;color:var(--muted)">Per-dark-store model trained on SKU history + weather API + IPL/Holi/Ramzan calendar + salary-cycle patterns. 72-hr forecasts updated every 4hrs. <span style="color:var(--green)">↓25% stockouts · ↓35% wastage · ₹18Cr/yr saved.</span></div></div>
+          </div>
+          <div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="flex-shrink:0"><span class="tag tag-a" style="font-size:7px;padding:2px 6px">PPO/A3C</span></div>
+            <div><div style="font-size:10px;font-weight:600;color:var(--white)">Deep RL VRP Solver — Rider Routing</div>
+            <div style="font-size:9px;color:var(--muted)">Multi-order batching: 3 orders within 400m = 1 rider. Real-time HERE Maps. Learns Friday 6PM Linking Road jams. <span style="color:var(--green)">+18% orders/rider/hr · ₹3,760Cr/yr saved.</span></div></div>
+          </div>
+          <div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="flex-shrink:0"><span class="tag tag-c" style="font-size:7px;padding:2px 6px">YOLO v8</span></div>
+            <div><div style="font-size:10px;font-weight:600;color:var(--white)">Computer Vision — Dark Store Inventory</div>
+            <div style="font-size:9px;color:var(--muted)">Edge cameras (NVIDIA Jetson Nano). Stockout detection in 3 sec. OCR reads expiry dates → auto-discount 48hr before. Fixes Zepto's FDA Dharavi violation issue. <span style="color:var(--green)">↓60% wrong deliveries · ₹5Cr/day in refund prevention.</span></div></div>
+          </div>
+          <div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="flex-shrink:0"><span class="tag tag-g" style="font-size:7px;padding:2px 6px">2-Tower</span></div>
+            <div><div style="font-size:10px;font-weight:600;color:var(--white)">Two-Tower NN — Personalisation + Replenishment</div>
+            <div style="font-size:9px;color:var(--muted)">User tower: brand loyalty, price sensitivity, household signals. Item tower: complementarity, margin profile. Predicts: "User needs atta in 4 days" → push notification. <span style="color:var(--green)">+8% order frequency · 34% replenishment conversion.</span></div></div>
+          </div>
+          <div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="flex-shrink:0"><span class="tag tag-p" style="font-size:7px;padding:2px 6px">Bandit</span></div>
+            <div><div style="font-size:10px;font-weight:600;color:var(--white)">Contextual Bandit — Ethical Occasion Pricing</div>
+            <div style="font-size:9px;color:var(--muted)">Zone-level demand surge pricing only (NOT device-type — kills Zepto's dark pattern). 3× premium pricing for Holi/IPL/Diwali occasion slots for brands. Transparent to consumers. <span style="color:var(--green)">Trust rebuild → ↓5% churn = ₹200Cr/yr retained GMV.</span></div></div>
+          </div>
+          <div style="display:flex;gap:9px;padding:7px 0">
+            <div style="flex-shrink:0"><span class="tag tag-a" style="font-size:7px;padding:2px 6px">Llama 3.1</span></div>
+            <div><div style="font-size:10px;font-weight:600;color:var(--white)">Fine-tuned Indic LLM — Tier 2/3 WhatsApp Commerce</div>
+            <div style="font-size:9px;color:var(--muted)">Fine-tuned on 22 Indian languages. WhatsApp: "Ek kilo pyaaz aur doodh bhejo" → parsed → SKU matched → UPI link. 530M WhatsApp users. Zero app install friction. <span style="color:var(--green)">Unlocks $800M–1.2B incremental GMV from 50+ new cities.</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <!-- 3 phases -->
+        <div class="card top-t">
+          <div class="ct t">3-PHASE INTEGRATION ROADMAP</div>
+          <div class="g3">
+            <div class="pc">
+              <div class="pc-hd" style="color:var(--teal)">PHASE 1</div>
+              <div class="pc-tm">Month 0–6</div>
+              <div class="pc-title">Stabilize</div>
+              <ul class="bl">
+                <li>Retain Zepto brand + Aadit as CEO India</li>
+                <li>FlashCart capital → kills IPO anxiety</li>
+                <li>CCI clearance (pre-emptive + remedies)</li>
+                <li>Deploy CV cameras: fix FDA issue</li>
+                <li>Kill device-type pricing (2 days, massive PR)</li>
+                <li>Launch FlashCart Prime at ₹149/mo</li>
+                <li>Build Moment Commerce event engine v1</li>
+              </ul>
+            </div>
+            <div class="pc">
+              <div class="pc-hd" style="color:var(--amber)">PHASE 2</div>
+              <div class="pc-tm">Month 6–18</div>
+              <div class="pc-title">Optimize</div>
+              <ul class="bl">
+                <li>TFT demand forecast → wastage ↓35%</li>
+                <li>PPO routing → rider cost ↓₹8.6/order</li>
+                <li>Two-Tower NN replenishment live</li>
+                <li>50 private label SKUs via FPO sourcing</li>
+                <li>Zepto Atom V2: 300 paying brands</li>
+                <li>350 new dark stores (H3-prioritized)</li>
+                <li>Occasion pricing 3× premium for brands</li>
+              </ul>
+            </div>
+            <div class="pc">
+              <div class="pc-hd" style="color:var(--coral)">PHASE 3</div>
+              <div class="pc-tm">Month 18–36</div>
+              <div class="pc-title">Ecosystem</div>
+              <ul class="bl">
+                <li>LLM WhatsApp ordering: 50+ Tier 2/3 cities</li>
+                <li>LMaaS: 200K B2B deliveries/day off-peak</li>
+                <li>Category expansion: Electronics, Baby, Pets</li>
+                <li>FlashCart India brand transition (data-led)</li>
+                <li>UAE pilot (Year 3), Indonesia Year 4</li>
+                <li>MENA/SEA with India dark store IP</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Moment Commerce Engine -->
+        <div class="card top-a">
+          <div class="ct a">THE MOMENT COMMERCE ENGINE — FLASHCART'S MOAT</div>
+          <div class="g2">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:4px">HOW IT WORKS</div>
+              <ul class="bl">
+                <li><strong>Event Intelligence Layer:</strong> Monitors 300+ annual Indian occasions — from T20 matches to Karwa Chauth to exam season. Auto-surfaces relevant categories.</li>
+                <li><strong>Occasion-Specific Inventory:</strong> TFT model pre-loads dark stores 6 hours before predicted demand spikes (match nights, festival eves).</li>
+                <li><strong>Brand Monetization:</strong> D2C brands pay 3–5× ad premium for occasion takeovers. Renee Cosmetics-type brands see 10–30% sales uplift.</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--teal);margin-bottom:4px">COMPETITIVE EDGE</div>
+              <ul class="bl">
+                <li><strong>vs Blinkit:</strong> Blinkit is ops-excellent but moment-agnostic. FlashCart makes every occasion a commerce event.</li>
+                <li><strong>vs JioMart/Ambani:</strong> JioMart sacrificed speed (15–180 min). We keep 10-min SLA + add the moment layer.</li>
+                <li><strong>The defensibility:</strong> Occasion data compounds — 3 years of which SKU spikes on which occasion in which hexagon = impossible to replicate.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 7: PERFORMANCE METRICS ══════════════════════ -->
+<div class="slide" id="s7">
+  <div class="eyebrow">07 — PERFORMANCE METRICS</div>
+  <div class="slide-title">KPI <span class="a">Dashboard</span> — Measuring What Matters</div>
+  <div class="scroll">
+    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px">
+      <!-- header -->
+      <div style="display:grid;grid-template-columns:110px 1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;background:var(--card2);padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="padding:0 10px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted)">CAT.</div>
+        <div style="padding:0 8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted)">KPI</div>
+        <div style="padding:0 8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);text-align:center">BASE</div>
+        <div style="padding:0 8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);text-align:center">YR 1</div>
+        <div style="padding:0 8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);text-align:center">YR 2</div>
+        <div style="padding:0 8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--amber);text-align:center;font-weight:600">YR 3 TARGET</div>
+        <div style="padding:0 8px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted)">DRIVER</div>
+      </div>
+      <!-- GROWTH rows -->
+      <div style="display:grid;grid-template-columns:110px 1fr;border-bottom:1px solid var(--border)">
+        <div style="background:var(--teal);display:flex;align-items:center;justify-content:center;padding:4px">
+          <span style="writing-mode:vertical-lr;transform:rotate(180deg);font-family:'DM Mono',monospace;font-size:8px;font-weight:700;color:#000;letter-spacing:.1em">GROWTH</span>
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">GMV Growth</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">$3B</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">$4.5B</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">$6.5B</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--teal);font-weight:700;text-align:center">$9B</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">Industry growing to $42B by 2030 (Morgan Stanley)</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4);background:rgba(0,0,0,.1)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Market Share (GMV)</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">22–30%</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">33%</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">37%</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--teal);font-weight:700;text-align:center">40%</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">Close gap vs Blinkit (48%) to &lt;10 pts</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">City Coverage</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">80+</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">110</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">150</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--teal);font-weight:700;text-align:center">200+</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">Tier 2/3 via Indic LLM + WhatsApp ordering</div>
+          </div>
+        </div>
+      </div>
+      <!-- MOMENT rows -->
+      <div style="display:grid;grid-template-columns:110px 1fr;border-bottom:1px solid var(--border)">
+        <div style="background:var(--amber);display:flex;align-items:center;justify-content:center;padding:4px">
+          <span style="writing-mode:vertical-lr;transform:rotate(180deg);font-family:'DM Mono',monospace;font-size:7.5px;font-weight:700;color:#000;letter-spacing:.08em;white-space:nowrap">MOMENT COMMERCE</span>
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4);background:rgba(0,0,0,.08)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Occasion GMV % (total)</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">~12%</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">18%</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">25%</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--amber);font-weight:700;text-align:center">32%</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">300+ occasions · D2C brands pay 3–5× premium</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Occasion AOV Uplift</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">+10%</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">+18%</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">+25%</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--amber);font-weight:700;text-align:center">+35%</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">Curated gift bundles + themed drops (BigBasket: 60% spike model)</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Retail Media Revenue</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">$30M</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">$80M</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">$150M</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--amber);font-weight:700;text-align:center">$280M</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">70–80% gross margin. Occasion slots command 3–5× base CPC.</div>
+          </div>
+        </div>
+      </div>
+      <!-- PROFITABILITY rows -->
+      <div style="display:grid;grid-template-columns:110px 1fr;border-bottom:1px solid var(--border)">
+        <div style="background:var(--green);display:flex;align-items:center;justify-content:center;padding:4px">
+          <span style="writing-mode:vertical-lr;transform:rotate(180deg);font-family:'DM Mono',monospace;font-size:8px;font-weight:700;color:#000;letter-spacing:.1em;white-space:nowrap">PROFITABILITY</span>
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4);background:rgba(0,0,0,.08)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">EBITDA ($M)</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--red);text-align:center">-$160M</div><div style="padding:0 8px;font-size:9.5px;color:var(--red);text-align:center">-$95M</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--green);text-align:center">+$136M</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--green);font-weight:700;text-align:center">+$715M</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">EBITDA breakeven Month 18. AI opex reduction + PM mix.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Private Label % GMV</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">4%</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">8%</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">15%</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--green);font-weight:700;text-align:center">22%</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">30–40% margin vs 10–15% branded. FPO direct sourcing.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Profitable Stores %</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">70%</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">80%</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">88%</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--green);font-weight:700;text-align:center">95%</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">TFT demand forecast cuts wastage 35%. H3 location precision.</div>
+          </div>
+        </div>
+      </div>
+      <!-- CUSTOMER rows -->
+      <div style="display:grid;grid-template-columns:110px 1fr">
+        <div style="background:var(--purple);display:flex;align-items:center;justify-content:center;padding:4px">
+          <span style="writing-mode:vertical-lr;transform:rotate(180deg);font-family:'DM Mono',monospace;font-size:8px;font-weight:700;color:#fff;letter-spacing:.1em;white-space:nowrap">CUSTOMER</span>
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4);background:rgba(0,0,0,.08)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Monthly Active Users</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">15M</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">22M</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">32M</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--purple);font-weight:700;text-align:center">48M</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">Prime sub loyalty + Tier 2/3 LLM expansion</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Prime Subscribers</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">0</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">3M</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">8M</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--purple);font-weight:700;text-align:center">15M</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">₹999/yr = ₹1,500Cr/yr pure recurring by Yr2</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1.1fr 1.6fr;padding:6px 0">
+            <div style="padding:0 8px;font-size:10px;color:var(--white);font-weight:500">Orders/Rider/Hour</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">3.2</div><div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">3.8</div>
+            <div style="padding:0 8px;font-size:9.5px;color:var(--muted);text-align:center">4.5</div>
+            <div style="padding:0 8px;font-size:10px;color:var(--purple);font-weight:700;text-align:center">5.2</div>
+            <div style="padding:0 8px;font-size:9px;color:var(--muted)">PPO deep RL multi-order batching system</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closing thesis -->
+    <div style="background:linear-gradient(135deg,rgba(245,166,35,.1),rgba(0,201,167,.06));border:1px solid rgba(245,166,35,.25);border-radius:7px;padding:14px 20px">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--amber);margin-bottom:6px">INVESTMENT THESIS</div>
+      <div style="font-size:11.5px;color:var(--white);line-height:1.65">
+        Zepto is <strong style="color:var(--teal)">India's only acquirable quick commerce asset at scale.</strong> FlashCart acquires at <strong style="color:var(--amber)">$5.5B pre-IPO</strong> — before public markets price in the upside — deploys a <strong style="color:var(--purple)">7-model AI stack</strong>, builds the <strong style="color:var(--coral)">Moment Commerce Engine</strong> that captures every Indian occasion (₹11,000 Cr GMV in January 2026 alone, +100% YoY), grows private labels to <strong style="color:var(--green)">22% of GMV</strong>, and creates a subscription + retail media flywheel with permanently positive unit economics. Target: <strong style="color:var(--amber)">$20–25B entity by 2030, IRR 28–35%.</strong> <em style="color:var(--teal)">India doesn't plan its commerce. It feels it. FlashCart will own every feeling.</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .deck -->
+
+<div id="navbar">
+  <button class="nbtn" id="pb">&#8592;</button>
+  <div class="nav-slides" id="pips"></div>
+  <div class="nlabel" id="nlbl">Cover</div>
+  <button class="nbtn" id="nb">&#8594;</button>
+  <div class="nkeys">← → navigate</div>
+</div>
+
+<script>
+const SLIDES = ['s0','s1','s2','s3','s4','s5','s6','s7'];
+const LABELS = ['Cover','01 · Context','02 · Industry','03 · Targets','04 · M&A Strategy','05 · Value Model','06 · Integration','07 · KPIs'];
+let cur = 0;
+
+const els = SLIDES.map(id => document.getElementById(id));
+const pipsEl = document.getElementById('pips');
+const nlbl = document.getElementById('nlbl');
+
+// Build pips
+SLIDES.forEach((_,i) => {
+  const p = document.createElement('div');
+  p.className = 'pip' + (i===0?' on':'');
+  p.addEventListener('click', ()=>go(i));
+  pipsEl.appendChild(p);
+});
+
+function go(n){
+  if(n<0||n>=SLIDES.length) return;
+  els[cur].classList.remove('active');
+  els[cur].classList.add('exit');
+  const prev=cur; cur=n;
+  setTimeout(()=>els[prev].classList.remove('exit'),420);
+  els[cur].classList.add('active');
+  pipsEl.querySelectorAll('.pip').forEach((p,i)=>p.classList.toggle('on',i===cur));
+  nlbl.textContent = LABELS[cur];
+}
+
+document.getElementById('pb').addEventListener('click',()=>go(cur-1));
+document.getElementById('nb').addEventListener('click',()=>go(cur+1));
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') go(cur+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') go(cur-1);
+});
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)go(d<0?cur+1:cur-1)});
+</script>
+</body>
+</html>
